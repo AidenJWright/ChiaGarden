@@ -11,8 +11,8 @@ namespace FollowCamera // Or any other appropriate namespace
         [SerializeField] private bool invertMouseY = false;
 
         [Header("Camera Constraints")]
-        [SerializeField] private float minVerticalAngle = -90f;
-        [SerializeField] private float maxVerticalAngle = 90f;
+        [SerializeField] private float minVerticalAngle = -80;
+        [SerializeField] private float maxVerticalAngle = 80;
 
         [Header("Smoothing")]
         [SerializeField] private float smoothTime = 0.1f;
@@ -103,10 +103,14 @@ namespace FollowCamera // Or any other appropriate namespace
         }
         void Update()
         {
+            HandleCursorToggle();
+        }
+
+        private void LateUpdate()
+        {
             HandleMouseLook();
             HandleZoom();
             HandleCameraShake();
-            HandleCursorToggle();
         }
         private void HandleMouseLook()
         {

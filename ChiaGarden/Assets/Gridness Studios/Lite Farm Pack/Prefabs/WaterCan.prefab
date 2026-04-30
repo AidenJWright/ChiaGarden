@@ -178,3 +178,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 566fdc84e9ae3b0419a29fa029727f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PickupItem
+  itemName: Watering Can
+  holdPositionOffset: {x: 0, y: 0, z: 0}
+  holdRotationOffset: {x: 0, y: 0, z: 0}

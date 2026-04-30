@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class PlayerPickup : MonoBehaviour
 {
@@ -11,15 +12,30 @@ public class PlayerPickup : MonoBehaviour
     [Header("Hold Settings")]
     [SerializeField] private Transform holdPoint;
 
+    [Header("UI")]
+    [SerializeField] private TextMeshProUGUI pickupPromptText;
+
     private PickupItem heldItem;
+    private PickupItem itemInView;
+
+    private void Start()
+    {
+        if (pickupPromptText != null)
+        {
+            pickupPromptText.text = "";
+        }
+    }
 
     private void Update()
     {
+        CheckForPickupItem();
+        UpdatePrompt();
+
         if (heldItem == null)
         {
-            if (Input.GetKeyDown(pickupKey))
+            if (Input.GetKeyDown(pickupKey) && itemInView != null)
             {
-                TryPickUp();
+                PickUpItem(itemInView);
             }
         }
         else
@@ -29,14 +45,37 @@ public class PlayerPickup : MonoBehaviour
                 DropHeldItem();
             }
         }
+
+        //this method is for seeds (left click to use) only when holding seeds
+        if (Input.GetMouseButtonDown(0))
+        {
+            PickupItem held = GetHeldItem();
+
+            if (held != null)
+            {
+                SeedTool seedTool = held.GetComponent<SeedTool>();
+
+                if (seedTool != null)
+                {
+                    seedTool.Use();
+                }
+            }
+        }
+
     }
 
-    private void TryPickUp()
+    private void CheckForPickupItem()
     {
-        Ray ray = new Ray(transform.position, transform.forward);
-        RaycastHit hit;
+        itemInView = null;
 
-        if (Physics.Raycast(ray, out hit, pickupRange, pickupLayer))
+        if (heldItem != null)
+        {
+            return;
+        }
+
+        Ray ray = new Ray(transform.position, transform.forward);
+
+        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange, pickupLayer))
         {
             PickupItem item = hit.collider.GetComponent<PickupItem>();
 
@@ -47,10 +86,33 @@ public class PlayerPickup : MonoBehaviour
 
             if (item != null)
             {
-                heldItem = item;
-                heldItem.PickUp(holdPoint);
+                itemInView = item;
             }
         }
+    }
+
+    private void UpdatePrompt()
+    {
+        if (pickupPromptText == null) return;
+
+        if (heldItem != null)
+        {
+            pickupPromptText.text = "[Q] to drop " + heldItem.GetItemName();
+        }
+        else if (itemInView != null)
+        {
+            pickupPromptText.text = "[E] to pick up " + itemInView.GetItemName();
+        }
+        else
+        {
+            pickupPromptText.text = "";
+        }
+    }
+
+    private void PickUpItem(PickupItem item)
+    {
+        heldItem = item;
+        heldItem.PickUp(holdPoint);
     }
 
     private void DropHeldItem()
