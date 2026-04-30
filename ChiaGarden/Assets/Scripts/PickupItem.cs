@@ -2,6 +2,13 @@ using UnityEngine;
 
 public class PickupItem : MonoBehaviour
 {
+    [Header("Item Info")]
+    [SerializeField] private string itemName = "Item";
+
+    [Header("Hold Offset")]
+    [SerializeField] private Vector3 holdPositionOffset = Vector3.zero;
+    [SerializeField] private Vector3 holdRotationOffset = Vector3.zero;
+
     private Rigidbody rb;
     private Collider col;
 
@@ -9,6 +16,11 @@ public class PickupItem : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+    }
+
+    public string GetItemName()
+    {
+        return itemName;
     }
 
     public void PickUp(Transform holdPoint)
@@ -25,8 +37,8 @@ public class PickupItem : MonoBehaviour
         }
 
         transform.SetParent(holdPoint);
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity;
+        transform.localPosition = holdPositionOffset;
+        transform.localRotation = Quaternion.Euler(holdRotationOffset);
     }
 
     public void Drop()
