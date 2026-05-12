@@ -9,6 +9,11 @@ public class WeatherManager : MonoBehaviour
     [SerializeField] private KeyCode toggleRainKey = KeyCode.R;
     [SerializeField] private bool rainEnabledAtStart = false;
 
+    [Header("Rain Audio")]
+    [SerializeField] private AudioSource rainAudioSource;
+    [SerializeField] private float fadeDuration = 2f;
+    [SerializeField] private AudioSource birdAudioSource;
+
     [Header("Lighting")]
     [SerializeField] private Light directionalLight;
     [SerializeField] private float sunnyLightIntensity = 1.2f;
@@ -72,10 +77,32 @@ public class WeatherManager : MonoBehaviour
         SetRain(!isRaining, false);
     }
 
-    public void SetRain(bool enable)
+    /*public void SetRain(bool enable)
     {
-        SetRain(enable, false);
-    }
+        //SetRain(enable, false);
+
+        isRaining = enable;
+
+        if (rainSystem != null)
+        {
+            rainSystem.SetActive(enable);
+        }
+
+        // AUDIO TRANSITIONS
+        if (enable)
+        {
+            StartCoroutine(FadeOutBirds());
+            StartCoroutine(FadeInRain());
+        }
+        else
+        {
+            StartCoroutine(FadeOutRain());
+            StartCoroutine(FadeInBirds());
+        }
+
+        Debug.Log("Rain is now " + (isRaining ? "ON" : "OFF"));
+
+    }*/
 
     private void SetRain(bool enable, bool instant)
     {
@@ -84,6 +111,22 @@ public class WeatherManager : MonoBehaviour
         if (rainSystem != null)
         {
             rainSystem.SetActive(enable);
+        }
+
+        if (rainAudioSource != null)
+        {
+            StopAllCoroutines();
+
+            if (enable)
+            {
+                StartCoroutine(FadeOutBirds());
+                StartCoroutine(FadeInRain());
+            }
+            else
+            {
+                StartCoroutine(FadeOutRain());
+                StartCoroutine(FadeInBirds());
+            }
         }
 
         if (isRaining)
@@ -174,5 +217,87 @@ public class WeatherManager : MonoBehaviour
     public bool IsRaining()
     {
         return isRaining;
+    }
+
+    private System.Collections.IEnumerator FadeInRain()
+    {
+        rainAudioSource.volume = 0f;
+
+        if (!rainAudioSource.isPlaying)
+        {
+            rainAudioSource.Play();
+        }
+
+        float timer = 0f;
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            rainAudioSource.volume = Mathf.Lerp(0f, 0.6f, timer / fadeDuration);
+            yield return null;
+        }
+
+        rainAudioSource.volume = 0.6f;
+    }
+
+    private System.Collections.IEnumerator FadeOutRain()
+    {
+        float startVolume = rainAudioSource.volume;
+
+        float timer = 0f;
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+            rainAudioSource.volume = Mathf.Lerp(startVolume, 0f, timer / fadeDuration);
+            yield return null;
+        }
+
+        rainAudioSource.volume = 0f;
+        rainAudioSource.Stop();
+    }
+
+    private System.Collections.IEnumerator FadeOutBirds()
+    {
+        float startVolume = birdAudioSource.volume;
+
+        float timer = 0f;
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+
+            birdAudioSource.volume =
+                Mathf.Lerp(startVolume, 0f, timer / fadeDuration);
+
+            yield return null;
+        }
+
+        birdAudioSource.volume = 0f;
+        birdAudioSource.Stop();
+    }
+
+    private System.Collections.IEnumerator FadeInBirds()
+    {
+        float timer = 0f;
+
+        birdAudioSource.volume = 0f;
+
+        if (!birdAudioSource.isPlaying)
+        {
+            birdAudioSource.Play();
+        }
+
+        while (timer < fadeDuration)
+        {
+            timer += Time.deltaTime;
+
+            birdAudioSource.volume =
+                Mathf.Lerp(0f, 0.5f, timer / fadeDuration);
+
+            yield return null;
+        }
+
+        birdAudioSource.volume = 0.5f;
     }
 }
