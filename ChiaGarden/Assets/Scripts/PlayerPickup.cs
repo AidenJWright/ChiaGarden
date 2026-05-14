@@ -46,7 +46,7 @@ public class PlayerPickup : MonoBehaviour
             }
         }
 
-        //this method is for seeds (left click to use) only when holding seeds
+        // Left click to use held tools
         if (Input.GetMouseButtonDown(0))
         {
             PickupItem held = GetHeldItem();
@@ -54,10 +54,15 @@ public class PlayerPickup : MonoBehaviour
             if (held != null)
             {
                 SeedTool seedTool = held.GetComponent<SeedTool>();
-
                 if (seedTool != null)
                 {
                     seedTool.Use();
+                }
+
+                WateringCan wateringCan = held.GetComponent<WateringCan>();
+                if (wateringCan != null)
+                {
+                    wateringCan.Use();
                 }
             }
         }
@@ -95,7 +100,20 @@ public class PlayerPickup : MonoBehaviour
     {
         if (pickupPromptText == null) return;
 
-        if (heldItem != null)
+        if (GetHeldItem() != null && GetHeldItem().GetComponent<WateringCan>() != null)
+        {
+            WateringCan can = GetHeldItem().GetComponent<WateringCan>();
+            Ray ray = Camera.main != null
+                ? Camera.main.ScreenPointToRay(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f))
+                : new Ray(transform.position, transform.forward);
+
+            GameObject target = null;
+            if (Physics.Raycast(ray, out RaycastHit waterHit, pickupRange, pickupLayer))
+                target = waterHit.collider.gameObject;
+
+            pickupPromptText.text = can.GetInteractPrompt(target);
+        }
+        else if (heldItem != null)
         {
             pickupPromptText.text = "[Q] to drop " + heldItem.GetItemName();
         }
